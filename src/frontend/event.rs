@@ -1,6 +1,6 @@
 use color_eyre::eyre::OptionExt;
+use crossterm::event;
 use futures::{FutureExt, StreamExt};
-use ratatui::crossterm::event::Event as CrosstermEvent;
 use std::time::Duration;
 use tokio::sync::mpsc;
 
@@ -21,7 +21,7 @@ pub enum Event {
     /// Crossterm events.
     ///
     /// These events are emitted by the terminal.
-    Crossterm(CrosstermEvent),
+    Crossterm(event::Event),
     /// Application events.
     ///
     /// Use this event to emit custom events that are specific to your application.

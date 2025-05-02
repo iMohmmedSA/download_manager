@@ -51,13 +51,11 @@ impl Download {
         });
     }
 
-    async fn handle_job(sender: mpsc::UnboundedSender<Event>, mut job: &mut DownloadJob) {
-        Self::metadata(sender.clone(), &mut job).await;
+    async fn handle_job(sender: mpsc::UnboundedSender<Event>, job: &mut DownloadJob) {
+        Self::metadata(sender.clone(), job).await;
         match job.strategy {
-            DownloadStrategy::Parallel => Self::download_parallel(sender.clone(), &mut job).await,
-            DownloadStrategy::Sequential => {
-                Self::download_sequential(sender.clone(), &mut job).await
-            }
+            DownloadStrategy::Parallel => Self::download_parallel(sender.clone(), job).await,
+            DownloadStrategy::Sequential => Self::download_sequential(sender.clone(), job).await,
             DownloadStrategy::Unknown => {
                 // TODO: Implement handling for unknown download strategy
             }
@@ -124,7 +122,6 @@ impl Download {
         )));
 
         job.strategy = support_range;
-        return;
     }
 
     async fn download_parallel(sender: mpsc::UnboundedSender<Event>, job: &mut DownloadJob) {
@@ -139,6 +136,7 @@ impl Download {
 
         let file = OpenOptions::new()
             .create(true)
+            .truncate(true)
             .write(true)
             .open(path.clone())
             .await
@@ -274,6 +272,7 @@ impl Download {
 
         let Ok(mut file) = OpenOptions::new()
             .create(true)
+            .truncate(true)
             .write(true)
             .open(&path)
             .await
@@ -310,7 +309,7 @@ impl Download {
         });
 
         while let Some(Ok(chunk)) = stream.next().await {
-            if let Err(_) = file.write_all(&chunk).await {
+            if (file.write_all(&chunk).await).is_err() {
                 monitor.abort();
                 sender
                     .send(Event::App(AppEvent::JobStatus(job_id, Status::Failed)))
@@ -320,7 +319,7 @@ impl Download {
             total_downloaded.fetch_add(chunk.len() as u64, Ordering::Relaxed);
         }
 
-        let _ = monitor.abort();
+        monitor.abort();
 
         sender
             .send(Event::App(AppEvent::JobStatus(job.id, Status::Completed)))

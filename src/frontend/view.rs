@@ -16,7 +16,7 @@ use super::app_mode::AppMode;
 pub struct View;
 
 impl View {
-    pub fn new(app: &mut App, frame: &mut Frame) {
+    pub fn build(app: &mut App, frame: &mut Frame) {
         let [header, body, semi_body, footer] = Layout::vertical([
             Constraint::Length(1),
             Constraint::Fill(1),
@@ -27,8 +27,8 @@ impl View {
 
         View::header(frame, header);
         View::body(app, frame, body);
-        View::semi_body(&app, frame, semi_body);
-        View::footer(&app, frame, footer);
+        View::semi_body(app, frame, semi_body);
+        View::footer(app, frame, footer);
 
         if app.show_popup {
             Self::pop(app, frame);

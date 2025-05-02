@@ -110,7 +110,7 @@ impl From<&DownloadJob> for Row<'_> {
                 job_speed
             ),
             DownloadStrategy::Sequential => {
-                format!("[{} {}]", done_format.to_string(), job_speed)
+                format!("[{} {}]", done_format, job_speed)
             }
             DownloadStrategy::Unknown => "".to_string(),
         };

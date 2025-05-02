@@ -48,15 +48,14 @@ impl App {
 
     pub async fn run(mut self, mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
         while self.running {
-            terminal.draw(|frame| View::new(&mut self, frame))?;
+            terminal.draw(|frame| View::build(&mut self, frame))?;
             match self.events.next().await? {
                 Event::Tick => self.tick(),
-                Event::Crossterm(event) => match event {
-                    crossterm::event::Event::Key(key_event) => {
+                Event::Crossterm(event) => {
+                    if let crossterm::event::Event::Key(key_event) = event {
                         KeyEvent::handle_key_events(&mut self, key_event)?
                     }
-                    _ => {}
-                },
+                }
                 Event::App(app_event) => match app_event {
                     AppEvent::Job(job) => {
                         self.table.items.push(job);

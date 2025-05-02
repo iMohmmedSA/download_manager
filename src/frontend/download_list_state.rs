@@ -6,6 +6,12 @@ pub struct ListState<T> {
     pub items: Vec<T>,
 }
 
+impl<T> Default for ListState<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> ListState<T> {
     pub fn new() -> Self {
         Self {
